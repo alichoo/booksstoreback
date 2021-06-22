@@ -46,6 +46,9 @@ $app->put('/removeslide', 'removeslide'); /* cart  */
 $app->put('/getproducts', 'getproducts'); /* cart  */
 $app->put('/removeproduct', 'removeproduct'); /* cart  */
 $app->put('/addproduct', 'addproduct');
+
+$app->put('/returnproduct', 'returnproduct');
+
 $app->put('/removecat', 'removecat');
 $app->put('/addcat', 'addcat');
 $app->put('/addmembership', 'addmembership'); /* add Membership */
@@ -121,20 +124,23 @@ function borrowingbooks()
                         `borrowing_expected_return_date`, 
                         `product_id`, 
                         `user_id`, 
+                        `product_qty`,
                         `borrowing_status`) 
                         VALUES (
                             :borrowing_date,
                             :borrowing_expected_return_date,
                             :product_id,
                             :user_id,
+                            :product_qty,
                             'pending'
                         )";
                 $stmt1 = $db->prepare($insert_in_book_borrowings_query);
 
 
                 $current_date = date("Y-m-d");
+                $borrowingdays= $data->borrowingdays;
                 //increment 2 days
-                $mod_date = strtotime($current_date . "+ 2 days");
+                $mod_date = strtotime($current_date . "+ $borrowingdays days");
                 $data->borrowing_date = $current_date;
                 $data->borrowing_expected_return_date = date("Y-m-d", $mod_date);
 
@@ -145,6 +151,8 @@ function borrowingbooks()
                 $stmt1->bindParam("borrowing_expected_return_date", $data->borrowing_expected_return_date, PDO::PARAM_STR);
                 $stmt1->bindParam("product_id", $data->product_id, PDO::PARAM_STR);
                 $stmt1->bindParam("user_id", $data->user_id, PDO::PARAM_STR);
+                $stmt1->bindParam("product_qty", $data->product_qty, PDO::PARAM_STR);
+
 
 
 
@@ -155,7 +163,7 @@ function borrowingbooks()
 
 
 
-                    $new_product_copies = $product_copies_object->product_copies - 1;
+                    $new_product_copies = $product_copies_object->product_copies - $data->product_qty;
                     $sql = "UPDATE product SET product_copies={$new_product_copies} WHERE product_id={$data->product_id}";
 
 
@@ -531,15 +539,27 @@ function addproduct()
     $product_material = $data->product_material;
     $product_case = $data->product_case;
     $product_price = $data->product_price;
+    $borrowing_price = $data->borrowing_price;
     $product_image = "http://localhost/PHP-Slim-Restful/api/productimages/" . $product_name . ".jpg";
     try {
         /*Inserting cart values*/
         $db = getDB();
-        $sql1 = "INSERT INTO product(cat_id,product_name,product_price,product_image,product_colors,product_sizes,product_description,product_material,product_case) VALUES(:cat_id,:product_name,:product_price,:product_image,:product_colors,:product_sizes,:product_description,:product_material,:product_case)";
+        $sql1 = "INSERT INTO product(cat_id,
+        product_name,
+        product_price,
+        borrowing_price,
+        product_image,
+        product_description) VALUES(:cat_id,
+        :product_name,
+        :product_price,
+        :borrowing_price,
+        :product_image,
+        :product_description)";
         $stmt1 = $db->prepare($sql1);
         $stmt1->bindParam("cat_id", $cat_id, PDO::PARAM_STR);
         $stmt1->bindParam("product_name", $product_name, PDO::PARAM_STR);
         $stmt1->bindParam("product_price", $product_price, PDO::PARAM_STR);
+        $stmt1->bindParam("borrowing_price", $borrowing_price, PDO::PARAM_STR);
         $stmt1->bindParam("product_image", $product_image, PDO::PARAM_STR);
         $stmt1->bindParam("product_colors", $product_colors, PDO::PARAM_STR);
         $stmt1->bindParam("product_sizes", $product_sizes, PDO::PARAM_STR);
@@ -573,18 +593,20 @@ function updateproduct()
     try {
         $products = '';
         $db = getDB();
-        $sql = "UPDATE product SET cat_id=:cat_id,product_name=:product_name,product_price=:product_price,product_image=:product_image,product_colors=:product_colors,product_description=:product_description,product_material=:product_material,product_sizes=:product_sizes WHERE product_id=:product_id";
+        $sql = "UPDATE product SET cat_id=:cat_id,
+        product_name=:product_name,
+        product_price=:product_price,
+        product_image=:product_image,
+        product_description=:product_description 
+        WHERE product_id=:product_id";
         $stmt = $db->prepare($sql);
         $stmt->bindParam("product_id", $product_id, PDO::PARAM_STR);
         $stmt->bindParam("cat_id", $cat_id, PDO::PARAM_STR);
         $stmt->bindParam("product_name", $product_name, PDO::PARAM_STR);
         $stmt->bindParam("product_price", $product_price, PDO::PARAM_STR);
         $stmt->bindParam("product_image", $product_image, PDO::PARAM_STR);
-        $stmt->bindParam("product_colors", $product_colors, PDO::PARAM_STR);
-        $stmt->bindParam("product_description", $product_description, PDO::PARAM_STR);
-        $stmt->bindParam("product_material", $product_material, PDO::PARAM_STR);
-        $stmt->bindParam("product_sizes", $product_sizes, PDO::PARAM_STR);
-        $stmt->execute();
+           $stmt->bindParam("product_description", $product_description, PDO::PARAM_STR);
+         $stmt->execute();
         $db = null;
 
         echo '{"error":false}';
@@ -592,7 +614,39 @@ function updateproduct()
         echo '{"error":true,"text":' . $e->getMessage() . '}';
     }
 }
-
+function returnproduct()
+{
+    $request = \Slim\Slim::getInstance()->request();
+    $data = json_decode($request->getBody());
+    $book_borrowing_id = $data->book_borrowing_id;
+    $product_copies = $data->product_qty;
+    $status='finished';
+     $borrowing_return_date=date('Y-m-d');
+ 
+    try {
+        
+        $db = getDB();
+        $sql = "UPDATE book_borrowings SET borrowing_status=:borrowing_status,borrowing_return_date=:borrowing_return_date WHERE book_borrowing_id=:book_borrowing_id";
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("book_borrowing_id", $book_borrowing_id, PDO::PARAM_STR);
+        $stmt->bindParam("borrowing_status", $status, PDO::PARAM_STR);
+        $stmt->bindParam("borrowing_return_date",   $borrowing_return_date, PDO::PARAM_STR);
+         
+        $stmt->execute();
+       
+       
+        $sql1 = "UPDATE product set product_copies=product_copies + :product_copies where product_id in (select product_id from book_borrowings WHERE book_borrowing_id=:book_borrowing_id  ) ";
+        $stmt1 = $db->prepare($sql1);
+        $stmt1->bindParam("book_borrowing_id", $book_borrowing_id, PDO::PARAM_STR);
+        $stmt1->bindParam("product_copies", $product_copies, PDO::PARAM_STR);
+        $stmt1->execute();
+         
+        $db=null;
+        echo '{"error":false}';
+    } catch (Exception $e) {
+        echo '{"error":true,"text":' . $e->getMessage() . '}';
+    } 
+}
 
 function updatecat()
 {
@@ -1050,13 +1104,11 @@ function addtocart()
     try {
         /*Inserting cart values*/
         $db = getDB();
-        $sql1 = "INSERT INTO cart(user_id,product_id,product_color,product_size,product_qty) VALUES(:user_id,:product_id,:product_color,:product_size,:product_qty)";
+        $sql1 = "INSERT INTO cart(user_id,product_id,product_qty) VALUES(:user_id,:product_id,:product_qty)";
         $stmt1 = $db->prepare($sql1);
         $stmt1->bindParam("user_id", $user_id, PDO::PARAM_STR);
         $stmt1->bindParam("product_id", $product_id, PDO::PARAM_STR);
-        $stmt1->bindParam("product_color", $product_color, PDO::PARAM_STR);
-        $stmt1->bindParam("product_size", $product_size, PDO::PARAM_STR);
-        $stmt1->bindParam("product_qty", $product_qty, PDO::PARAM_STR);
+          $stmt1->bindParam("product_qty", $product_qty, PDO::PARAM_STR);
         $stmt1->execute();
 
         // $userData=internalUserDetails($product_id);

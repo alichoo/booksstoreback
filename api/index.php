@@ -51,6 +51,7 @@ $app->put('/returnproduct', 'returnproduct');
 
 $app->put('/removecat', 'removecat');
 $app->put('/addcat', 'addcat');
+$app->put('/confirmcart', 'confirmcart');
 $app->put('/addmembership', 'addmembership'); /* add Membership */
 $app->put('/getmembership', 'getmembership'); /* get membership  */
 $app->put('/updateproduct', 'updateproduct');
@@ -532,12 +533,9 @@ function addproduct()
     $cat_id = $data->cat_id;
     $product_name = $data->product_name;
     //$product_photo=$data->product_photo;
-    $product_colors = $data->product_colors;
-    $product_sizes = $data->product_sizes;
     // $product_image=$data->product_image;
     $product_description = $data->product_description;
-    $product_material = $data->product_material;
-    $product_case = $data->product_case;
+    
     $product_price = $data->product_price;
     $borrowing_price = $data->borrowing_price;
     $product_image = "http://localhost/PHP-Slim-Restful/api/productimages/" . $product_name . ".jpg";
@@ -561,12 +559,8 @@ function addproduct()
         $stmt1->bindParam("product_price", $product_price, PDO::PARAM_STR);
         $stmt1->bindParam("borrowing_price", $borrowing_price, PDO::PARAM_STR);
         $stmt1->bindParam("product_image", $product_image, PDO::PARAM_STR);
-        $stmt1->bindParam("product_colors", $product_colors, PDO::PARAM_STR);
-        $stmt1->bindParam("product_sizes", $product_sizes, PDO::PARAM_STR);
         $stmt1->bindParam("product_description", $product_description, PDO::PARAM_STR);
-        $stmt1->bindParam("product_material", $product_material, PDO::PARAM_STR);
-        $stmt1->bindParam("product_case", $product_case, PDO::PARAM_STR);
-        $stmt1->execute();
+              $stmt1->execute();
 
         // $userData=internalUserDetails($product_id);
         $db = null;
@@ -664,6 +658,27 @@ function updatecat()
         $stmt->bindParam("cat_name", $cat_name, PDO::PARAM_STR);
         $stmt->bindParam("cat_image", $cat_image, PDO::PARAM_STR);
 
+        $stmt->execute();
+        $db = null;
+
+        echo '{"error":false}';
+    } catch (PDOException $e) {
+        echo '{"error":true,"text":' . $e->getMessage() . '}';
+    }
+}
+function confirmcart()
+{
+    $request = \Slim\Slim::getInstance()->request();
+    $data = json_decode($request->getBody());
+    $user_id = $data->user_id;
+     
+    try {
+        $categories = '';
+        $db = getDB();
+        $sql = "UPDATE cart SET status=1  where user_id=:user_id and status=0 ";
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("user_id", $user_id, PDO::PARAM_STR);
+        
         $stmt->execute();
         $db = null;
 
@@ -1056,9 +1071,33 @@ function getcart()
     try {
         $carts = '';
         $db = getDB();
-        $sql = "SELECT *, product.product_price*cart.product_qty AS price_all_qty FROM cart LEFT JOIN product ON cart.product_id=product.product_id WHERE cart.user_id=:user_id";
+        $sql = "SELECT *, product.product_price*cart.product_qty AS price_all_qty FROM cart LEFT JOIN product ON cart.product_id=product.product_id WHERE cart.user_id=:user_id and status=0";
         $stmt = $db->prepare($sql);
         $stmt->bindParam("user_id", $user_id, PDO::PARAM_STR);
+        $stmt->execute();
+        $carts = $stmt->fetchAll(PDO::FETCH_OBJ);
+        $db = null;
+        if ($carts)
+            echo '{"error":false,"carts": ' . json_encode($carts) . '}';
+        else
+            echo '{"error":true,"carts": ""}';
+    } catch (PDOException $e) {
+        echo '{"error":true,"text":' . $e->getMessage() . '}';
+    }
+}
+function getcartbyproduct()
+{
+    $request = \Slim\Slim::getInstance()->request();
+    $data = json_decode($request->getBody());
+    $user_id = $data->user_id;
+    $product_id = $data->product_id;
+    try {
+        $carts = '';
+        $db = getDB();
+        $sql = "SELECT * FROM cart  WHERE cart.user_id=:user_id and product_id=:product_id";
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("user_id", $user_id, PDO::PARAM_STR);
+        $stmt->bindParam("product_id", $product_id, PDO::PARAM_STR);
         $stmt->execute();
         $carts = $stmt->fetchAll(PDO::FETCH_OBJ);
         $db = null;
@@ -1101,9 +1140,32 @@ function addtocart()
     $product_color = $data->product_color;
     $product_size = $data->product_size;
     $product_qty = $data->product_qty;
-    try {
-        /*Inserting cart values*/
+    try { 
         $db = getDB();
+        $sql = "SELECT * FROM cart  WHERE cart.user_id=:user_id and product_id=:product_id";
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("user_id", $user_id, PDO::PARAM_STR);
+        $stmt->bindParam("product_id", $product_id, PDO::PARAM_STR);
+        $stmt->execute();
+        $carts = $stmt->fetchAll(PDO::FETCH_OBJ);
+       
+        if ($carts){
+            
+        /*Inserting cart values*/
+       
+        $sql1 = "UPDATE cart set product_qty=product_qty + :product_qty where product_id=:product_id and user_id=:user_id and status=0 ";
+        $stmt1 = $db->prepare($sql1);
+        $stmt1->bindParam("user_id", $user_id, PDO::PARAM_STR);
+        $stmt1->bindParam("product_id", $product_id, PDO::PARAM_STR);
+        $stmt1->bindParam("product_qty", $product_qty, PDO::PARAM_STR);
+        $stmt1->execute();
+
+        
+        // $userData=internalUserDetails($product_id);
+         echo '{"error":false}';
+        } else {
+        /*Inserting cart values*/
+       
         $sql1 = "INSERT INTO cart(user_id,product_id,product_qty) VALUES(:user_id,:product_id,:product_qty)";
         $stmt1 = $db->prepare($sql1);
         $stmt1->bindParam("user_id", $user_id, PDO::PARAM_STR);
@@ -1112,8 +1174,15 @@ function addtocart()
         $stmt1->execute();
 
         // $userData=internalUserDetails($product_id);
-        $db = null;
-        echo '{"error":false}';
+       
+        echo '{"error":false}';}
+        $sql2 = "UPDATE product set product_copies=product_copies - :product_qty where product_id=:product_id";
+        $stmt2 = $db->prepare($sql2);
+        // $stmt2->bindParam("user_id", $user_id, PDO::PARAM_STR);
+        $stmt2->bindParam("product_id", $product_id, PDO::PARAM_STR);
+        $stmt2->bindParam("product_qty", $product_qty, PDO::PARAM_STR);
+        $stmt2->execute();
+        $db=null;
     } catch (PDOException $e) {
         echo '{"error": true,"text":' . $e->getMessage() . '}';
     }
@@ -1124,6 +1193,7 @@ function addqtytocart()
     $request = \Slim\Slim::getInstance()->request();
     $data = json_decode($request->getBody());
     $cart_id = $data->cart_id;
+    $product_id = $data->product_id;
     try {
         $carts = '';
         $db = getDB();
@@ -1131,7 +1201,13 @@ function addqtytocart()
         $stmt = $db->prepare($sql);
         $stmt->bindParam("cart_id", $cart_id, PDO::PARAM_STR);
         $stmt->execute();
-        $db = null;
+        $sql2 = "UPDATE product set product_copies=product_copies - 1 where product_id=:product_id";
+        $stmt2 = $db->prepare($sql2);
+        // $stmt2->bindParam("user_id", $user_id, PDO::PARAM_STR);
+        $stmt2->bindParam("product_id", $product_id, PDO::PARAM_STR);
+       // $stmt2->bindParam("product_qty", $product_qty, PDO::PARAM_STR);
+        $stmt2->execute();
+        $db=null;
 
         echo '{"error":false}';
     } catch (PDOException $e) {
@@ -1145,6 +1221,7 @@ function removeqtytocart()
     $request = \Slim\Slim::getInstance()->request();
     $data = json_decode($request->getBody());
     $cart_id = $data->cart_id;
+    $product_id = $data->product_id;
     try {
         $carts = '';
         $db = getDB();
@@ -1153,7 +1230,13 @@ function removeqtytocart()
         $stmt->bindParam("cart_id", $cart_id, PDO::PARAM_STR);
         $stmt->execute();
 
-        $db = null;
+        $sql2 = "UPDATE product set product_copies=product_copies + 1 where product_id=:product_id";
+        $stmt2 = $db->prepare($sql2);
+        // $stmt2->bindParam("user_id", $user_id, PDO::PARAM_STR);
+        $stmt2->bindParam("product_id", $product_id, PDO::PARAM_STR);
+       // $stmt2->bindParam("product_qty", $product_qty, PDO::PARAM_STR);
+        $stmt2->execute();
+        $db=null;
 
         echo '{"error":false}';
     } catch (PDOException $e) {

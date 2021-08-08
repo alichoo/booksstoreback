@@ -138,12 +138,12 @@ function borrowingbooks()
                 $stmt1 = $db->prepare($insert_in_book_borrowings_query);
 
 
-                $current_date = date("Y-m-d");
-                $borrowingdays= $data->borrowingdays;
+                $current_date = date($data->fromdate);
+               // $borrowingdays= $data->borrowingdays;
                 //increment 2 days
-                $mod_date = strtotime($current_date . "+ $borrowingdays days");
+               // $mod_date = strtotime($current_date . "+ $borrowingdays days");
                 $data->borrowing_date = $current_date;
-                $data->borrowing_expected_return_date = date("Y-m-d", $mod_date);
+                $data->borrowing_expected_return_date = date($data->todate);
 
 
 

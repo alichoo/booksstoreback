@@ -115,7 +115,6 @@ function borrowingbooks()
             $product_copies_object = $stmt->fetch(PDO::FETCH_OBJ);
 
 
-
             if ($product_copies_object->product_copies) {
 
                 $insert_in_book_borrowings_query = "INSERT INTO 
@@ -1142,7 +1141,7 @@ function addtocart()
     $product_qty = $data->product_qty;
     try { 
         $db = getDB();
-        $sql = "SELECT * FROM cart  WHERE cart.user_id=:user_id and product_id=:product_id";
+        $sql = "SELECT * FROM cart  WHERE cart.user_id=:user_id and product_id=:product_id and status=0 ";
         $stmt = $db->prepare($sql);
         $stmt->bindParam("user_id", $user_id, PDO::PARAM_STR);
         $stmt->bindParam("product_id", $product_id, PDO::PARAM_STR);

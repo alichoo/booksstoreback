@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : mar. 22 juin 2021 à 02:35
+-- Généré le : ven. 13 août 2021 à 04:08
 -- Version du serveur :  10.4.19-MariaDB
 -- Version de PHP : 7.3.28
 
@@ -78,6 +78,7 @@ CREATE TABLE `book_borrowings` (
   `borrowing_date` date NOT NULL,
   `borrowing_expected_return_date` date DEFAULT NULL,
   `borrowing_return_date` date DEFAULT NULL,
+  `borrowing_deposit_tax` varchar(20) NOT NULL DEFAULT '0',
   `product_qty` int(11) NOT NULL,
   `product_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -90,8 +91,8 @@ CREATE TABLE `book_borrowings` (
 -- Déchargement des données de la table `book_borrowings`
 --
 
-INSERT INTO `book_borrowings` (`book_borrowing_id`, `borrowing_date`, `borrowing_expected_return_date`, `borrowing_return_date`, `product_qty`, `product_id`, `user_id`, `borrowing_status`, `created_at`, `updated_at`) VALUES
-(1, '2021-06-22', '2021-06-24', '2021-06-22', 1, 69, 22, 'finished', '2021-06-21 22:09:40', NULL);
+INSERT INTO `book_borrowings` (`book_borrowing_id`, `borrowing_date`, `borrowing_expected_return_date`, `borrowing_return_date`, `borrowing_deposit_tax`, `product_qty`, `product_id`, `user_id`, `borrowing_status`, `created_at`, `updated_at`) VALUES
+(13, '2021-08-13', '2021-08-15', NULL, '100', 2, 72, 22, 'returned', '2021-08-13 00:17:04', NULL);
 
 -- --------------------------------------------------------
 
@@ -104,6 +105,8 @@ CREATE TABLE `cart` (
   `user_id` int(11) NOT NULL,
   `product_id` int(11) NOT NULL,
   `product_qty` int(11) NOT NULL DEFAULT 1,
+  `date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` int(11) NOT NULL DEFAULT 0,
   `note` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -111,9 +114,10 @@ CREATE TABLE `cart` (
 -- Déchargement des données de la table `cart`
 --
 
-INSERT INTO `cart` (`cart_id`, `user_id`, `product_id`, `product_qty`, `note`) VALUES
-(271, 22, 69, 1, ''),
-(272, 22, 70, 1, '');
+INSERT INTO `cart` (`cart_id`, `user_id`, `product_id`, `product_qty`, `date`, `status`, `note`) VALUES
+(283, 22, 69, 1, '2021-08-10 23:20:35', 1, ''),
+(284, 22, 69, 2, '2021-08-11 00:52:20', 1, ''),
+(285, 22, 69, 1, '2021-08-13 01:52:21', 0, '');
 
 -- --------------------------------------------------------
 
@@ -135,7 +139,7 @@ INSERT INTO `category` (`cat_id`, `cat_name`, `cat_image`) VALUES
 (1, 'SOFTWARE', 'https://imgv2-2-f.scribdassets.com/img/word_document/239088050/original/216x287/9d0d463c1c/1579763660?v=1'),
 (2, 'ECONOMIC', 'https://m.media-amazon.com/images/I/41YhgR+0tPL._AC_UL320_.jpg'),
 (3, 'HISTORICAL', 'https://m.timesofindia.com/img/78055116/Master.jpg'),
-(4, 'POLITICAL', 'https://flexpub.com/img/covers/9781603848732.jpg'),
+(4, 'POLITICAL', 'localhost/PHP-/api/catimages/POLITICAL.jpg'),
 (5, 'PSYCHOLOGY', 'https://images-platform.99static.com//jebug2CwIGbPujJ7Xvyz6fTdI94=/0x6:2029x2035/fit-in/500x500/99designs-contests-attachments/92/92795/attachment_92795314'),
 (14, 'ROMANTIC', 'https://images.unsplash.com/photo-1509873889234-3cdbfe2e6740?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MzZ8fGNvdXBsZXxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&w=1000&q=80');
 
@@ -150,6 +154,7 @@ CREATE TABLE `member` (
   `user_id` int(11) NOT NULL,
   `member_type` int(11) NOT NULL DEFAULT 0,
   `status` int(11) NOT NULL DEFAULT 0,
+  `discount` int(11) NOT NULL DEFAULT 2,
   `added_date` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -157,8 +162,8 @@ CREATE TABLE `member` (
 -- Déchargement des données de la table `member`
 --
 
-INSERT INTO `member` (`id`, `user_id`, `member_type`, `status`, `added_date`) VALUES
-(1, 22, 0, 0, '2021-06-20 22:17:32');
+INSERT INTO `member` (`id`, `user_id`, `member_type`, `status`, `discount`, `added_date`) VALUES
+(1, 22, 0, 0, 2, '2021-08-08 04:11:30');
 
 -- --------------------------------------------------------
 
@@ -228,11 +233,11 @@ CREATE TABLE `product` (
 
 INSERT INTO `product` (`product_id`, `cat_id`, `product_name`, `product_price`, `borrowing_price`, `product_image`, `product_description`, `product_copies`) VALUES
 (65, 14, 'Frames set F1 ', 1550, '1550', 'https://images.unsplash.com/photo-1619631428089-813ef0fca73b?ixid=MnwxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHw4fHx8ZW58MHx8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'Wooden shelf and wooden frames with glass and print pictures ', 3),
-(69, 1, 'C++', 335, '335', 'https://imgv2-1-f.scribdassets.com/img/word_document/382269418/original/216x287/7723ccfab5/1579150149?v=1', 'MDF 18 m and glass 3 m', 2),
-(70, 1, 'JAVA', 150, '150', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_WsrU23B6S5Xsm5ZK0KGDTvuTX-Ofu1yXb-uNQMuUdqRA8oSDbIrs2r4BpVxnxOUSC7q9FSuU&usqp=CAc', 'Java is a set of computer software and specifications developed by James Gosling at Sun Microsystems, which was later acquired by the Oracle Corporation, that provides a system for developing application software and deploying it in a cross-platform computing environment', 2),
-(72, 1, 'JAVASCRIPT', 475, '475', 'https://imgv2-1-f.scribdassets.com/img/word_document/376443107/original/216x287/6d3d3ec402/1617227515?v=1', 'MDF 30 m and glass 4m', 0),
-(73, 1, 'HTML5', 675, '675', 'https://www.templatemonster.com/blog/wp-content/uploads/2011/01/Sams-Teach-Yourself-HTML5-in-10-Minutes.jpg', 'MDF 30 m and glass 4 m', 1),
-(74, 1, 'PYTHON', 775, '775', 'https://images-na.ssl-images-amazon.com/images/I/61gBVmFtNpL.jpg', 'MDF 18 m and glass 4 m', 1),
+(69, 1, 'C++', 335, '335', 'https://imgv2-1-f.scribdassets.com/img/word_document/382269418/original/216x287/7723ccfab5/1579150149?v=1', 'MDF 18 m and glass 3 m', -5),
+(70, 1, 'JAVA', 150, '150', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_WsrU23B6S5Xsm5ZK0KGDTvuTX-Ofu1yXb-uNQMuUdqRA8oSDbIrs2r4BpVxnxOUSC7q9FSuU&usqp=CAc', 'Java is a set of computer software and specifications developed by James Gosling at Sun Microsystems, which was later acquired by the Oracle Corporation, that provides a system for developing application software and deploying it in a cross-platform computing environment', 1),
+(72, 1, 'JAVASCRIPT', 475, '475', 'https://imgv2-1-f.scribdassets.com/img/word_document/376443107/original/216x287/6d3d3ec402/1617227515?v=1', 'MDF 30 m and glass 4m', 1),
+(73, 1, 'HTML5', 675, '675', 'https://www.templatemonster.com/blog/wp-content/uploads/2011/01/Sams-Teach-Yourself-HTML5-in-10-Minutes.jpg', 'MDF 30 m and glass 4 m', 0),
+(74, 1, 'PYTHON', 775, '775', 'https://images-na.ssl-images-amazon.com/images/I/61gBVmFtNpL.jpg', 'MDF 18 m and glass 4 m', 0),
 (75, 1, 'FULTTER', 1850, '1850', 'https://images-na.ssl-images-amazon.com/images/I/51AiHWxOzcL._SX396_BO1,204,203,200_.jpg', 'MDF 30 m and glass 4 m', 1),
 (76, 1, 'SWIFT', 775, '775', 'https://images-eu.ssl-images-amazon.com/images/I/51h3z9rRy9L._AC_UL600_SR480,600_.jpg', 'MDF 18 m and glass 4 m', 1),
 (77, 1, 'KOTLIN', 775, '775', 'https://images-na.ssl-images-amazon.com/images/I/418fafvbxeL.jpg', 'MDF 18 m and glass 4 m', 1),
@@ -277,7 +282,11 @@ INSERT INTO `product` (`product_id`, `cat_id`, `product_name`, `product_price`, 
 (130, 14, 'Frames sets F5', 1000, '1000', 'https://msi-cs.com/404gallery/api/productimages/Frames sets F5.jpg', 'Wooden shelf and wooden frames with glass and print pictures', 1),
 (131, 14, 'Frames sets Co-6', 1000, '1000', 'https://msi-cs.com/404gallery/api/productimages/Frames sets Co-6.jpg', 'Wooden shelf and wooden frames with glass and print pictures', 1),
 (132, 14, 'Frames sets Logo L7', 2800, '2800', 'https://msi-cs.com/404gallery/api/productimages/Frames sets Logo L7.jpg', 'wooden frames with glass and print pictures', 1),
-(133, 2, 'nothingsssssssssss', 1111, '1111', 'http://localhost/PHP-Slim-Restful/api/productimages/nothingsssssssssss.jpg', 'sdasdasdasdasdasds', 1);
+(133, 2, 'nothingsssssssssss', 1111, '1111', 'http://localhost/PHP-Slim-Restful/api/productimages/nothingsssssssssss.jpg', 'sdasdasdasdasdasds', 1),
+(134, 4, 'hghghg', 10, '10', 'http://localhost/PHP-Slim-Restful/api/productimages/hghghg.jpg', 'bnbnbnnbnbn', 1),
+(145, 4, 'nhjhjjhjhjhj', 10, '1522', 'http://localhost/PHP-Slim-Restful/api/productimages/nhjhjjhjhjhj.jpg', 'bnjj', 1),
+(146, 4, 'nhjhjjhjhjhj', 10, '1522', 'http://localhost/PHP-Slim-Restful/api/productimages/nhjhjjhjhjhj.jpg', 'bnjj', 1),
+(147, 5, 'cvcv', 10, '5', 'http://localhost/PHP-Slim-Restful/api/productimages/cvcv.jpg', 'dfggfgf', 1);
 
 -- --------------------------------------------------------
 
@@ -359,7 +368,6 @@ CREATE TABLE `wishlist` (
 INSERT INTO `wishlist` (`wish_id`, `product_id`, `user_id`) VALUES
 (29, 65, 13),
 (30, 69, 13),
-(32, 70, 22),
 (37, 74, 23),
 (49, 73, 25),
 (50, 70, 27),
@@ -424,8 +432,7 @@ ALTER TABLE `newarrivals`
 -- Index pour la table `orders`
 --
 ALTER TABLE `orders`
-  ADD PRIMARY KEY (`order_num`),
-  ADD KEY `user_id` (`user_id`);
+  ADD PRIMARY KEY (`order_num`);
 
 --
 -- Index pour la table `product`
@@ -469,13 +476,13 @@ ALTER TABLE `admin`
 -- AUTO_INCREMENT pour la table `book_borrowings`
 --
 ALTER TABLE `book_borrowings`
-  MODIFY `book_borrowing_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `book_borrowing_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT pour la table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=273;
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=286;
 
 --
 -- AUTO_INCREMENT pour la table `category`
@@ -511,7 +518,7 @@ ALTER TABLE `orders`
 -- AUTO_INCREMENT pour la table `product`
 --
 ALTER TABLE `product`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=134;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=148;
 
 --
 -- AUTO_INCREMENT pour la table `slides`
@@ -529,18 +536,11 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT pour la table `wishlist`
 --
 ALTER TABLE `wishlist`
-  MODIFY `wish_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `wish_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- Contraintes pour les tables déchargées
 --
-
---
--- Contraintes pour la table `book_borrowings`
---
-ALTER TABLE `book_borrowings`
-  ADD CONSTRAINT `book_borrowings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
-  ADD CONSTRAINT `book_borrowings_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`);
 
 --
 -- Contraintes pour la table `cart`

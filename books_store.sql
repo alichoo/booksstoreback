@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : ven. 13 août 2021 à 04:08
+-- Généré le : ven. 13 août 2021 à 07:40
 -- Version du serveur :  10.4.19-MariaDB
 -- Version de PHP : 7.3.28
 
@@ -117,7 +117,8 @@ CREATE TABLE `cart` (
 INSERT INTO `cart` (`cart_id`, `user_id`, `product_id`, `product_qty`, `date`, `status`, `note`) VALUES
 (283, 22, 69, 1, '2021-08-10 23:20:35', 1, ''),
 (284, 22, 69, 2, '2021-08-11 00:52:20', 1, ''),
-(285, 22, 69, 1, '2021-08-13 01:52:21', 0, '');
+(285, 29, 69, 1, '2021-08-13 01:52:21', 1, 'Payment ID: ch_3JNsy9Lt0g7AUZkx06vftn2Y'),
+(286, 29, 70, 1, '2021-08-13 02:47:33', 1, 'Payment ID: ch_3JNt6ELt0g7AUZkx1NnkLzah');
 
 -- --------------------------------------------------------
 
@@ -234,7 +235,7 @@ CREATE TABLE `product` (
 INSERT INTO `product` (`product_id`, `cat_id`, `product_name`, `product_price`, `borrowing_price`, `product_image`, `product_description`, `product_copies`) VALUES
 (65, 14, 'Frames set F1 ', 1550, '1550', 'https://images.unsplash.com/photo-1619631428089-813ef0fca73b?ixid=MnwxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHw4fHx8ZW58MHx8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'Wooden shelf and wooden frames with glass and print pictures ', 3),
 (69, 1, 'C++', 335, '335', 'https://imgv2-1-f.scribdassets.com/img/word_document/382269418/original/216x287/7723ccfab5/1579150149?v=1', 'MDF 18 m and glass 3 m', -5),
-(70, 1, 'JAVA', 150, '150', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_WsrU23B6S5Xsm5ZK0KGDTvuTX-Ofu1yXb-uNQMuUdqRA8oSDbIrs2r4BpVxnxOUSC7q9FSuU&usqp=CAc', 'Java is a set of computer software and specifications developed by James Gosling at Sun Microsystems, which was later acquired by the Oracle Corporation, that provides a system for developing application software and deploying it in a cross-platform computing environment', 1),
+(70, 1, 'JAVA', 150, '150', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_WsrU23B6S5Xsm5ZK0KGDTvuTX-Ofu1yXb-uNQMuUdqRA8oSDbIrs2r4BpVxnxOUSC7q9FSuU&usqp=CAc', 'Java is a set of computer software and specifications developed by James Gosling at Sun Microsystems, which was later acquired by the Oracle Corporation, that provides a system for developing application software and deploying it in a cross-platform computing environment', 0),
 (72, 1, 'JAVASCRIPT', 475, '475', 'https://imgv2-1-f.scribdassets.com/img/word_document/376443107/original/216x287/6d3d3ec402/1617227515?v=1', 'MDF 30 m and glass 4m', 1),
 (73, 1, 'HTML5', 675, '675', 'https://www.templatemonster.com/blog/wp-content/uploads/2011/01/Sams-Teach-Yourself-HTML5-in-10-Minutes.jpg', 'MDF 30 m and glass 4 m', 0),
 (74, 1, 'PYTHON', 775, '775', 'https://images-na.ssl-images-amazon.com/images/I/61gBVmFtNpL.jpg', 'MDF 18 m and glass 4 m', 0),
@@ -347,7 +348,8 @@ INSERT INTO `users` (`user_id`, `name`, `password`, `phone`, `email`, `address`,
 (25, 'anwer ', '84d9c4b849506b6d8f8075a9000e7e0a254be71060ea889fad3c88395988f4fc', '05636465188', 'mobinmdshlll@gmail.com', 'melaka ', 'user', '2', 'sds', 'malaysia', '+01', ''),
 (26, 'mohammed ', '84d9c4b849506b6d8f8075a9000e7e0a254be71060ea889fad3c88395988f4fc', '0563646511', 'qzalalrashdd@gmail.com', 'sass', 'user', '12', 'sadasd', 'malaysia', '+01', 'Restful/api/usersimages/mobinmdshl@gmail.com.jpg'),
 (27, 'anwer ', '9cc512ec26d63ae38bce0e9e479fcc1a6e417905be369e7cc8c6d4d962b0fdcb', '1111111111', 'mobinmdshll@gmail.com', 'dsdsf', 'user', '12', 'ewrw', 'malaysia', '+01', ''),
-(28, 'abdulAziz', 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f', '1231234456', 'tester@books.com', 'asdflkjas', 'user', '2132', 'ABc', 'malaysia', '+01', 'http://localhost/PHP-Slim-Restful/api/usersimages/tester@books.com.jpg');
+(28, 'abdulAziz', 'ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f', '1231234456', 'tester@books.com', 'asdflkjas', 'user', '2132', 'ABc', 'malaysia', '+01', 'http://localhost/PHP-Slim-Restful/api/usersimages/tester@books.com.jpg'),
+(29, 'ali ', 'e1c68df60e2b863b4a6afc531502acf8ae3ecf50afc0f2e2146bce2aa67ecd9c', '142525251425', 'ali.chouikhi2@gmail.com', '45445545', 'user', '142', 'kjkjk', 'malaysia', '+216', '');
 
 -- --------------------------------------------------------
 
@@ -482,7 +484,7 @@ ALTER TABLE `book_borrowings`
 -- AUTO_INCREMENT pour la table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=286;
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=287;
 
 --
 -- AUTO_INCREMENT pour la table `category`
@@ -530,7 +532,7 @@ ALTER TABLE `slides`
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `user_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT pour la table `wishlist`

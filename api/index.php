@@ -1,6 +1,7 @@
 <?php
 require 'config.php';
 require 'Slim/Slim.php';
+require 'vendor/autoload.php';
 // header('Access-Control-Allow-Origin: *');
 // header('Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS');
 // header('Access-Control-Allow-Headers: Origin, Content-Type, X-Auth-Token');
@@ -11,7 +12,8 @@ require 'Slim/Slim.php';
 // header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 // header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
-
+//$stripeKey = 'sk_test_BvD8gQeTcrAxmFmVvyieYUNA';
+ 
 \Slim\Slim::registerAutoloader();
 $app = new \Slim\Slim();
 
@@ -53,6 +55,8 @@ $app->put('/removecat', 'removecat');
 $app->put('/addcat', 'addcat');
 $app->put('/confirmcart', 'confirmcart');
 $app->put('/addmembership', 'addmembership'); /* add Membership */
+
+$app->put('/stripepay', 'stripepay'); 
 $app->put('/getmembership', 'getmembership'); /* get membership  */
 $app->put('/updateproduct', 'updateproduct');
 $app->put('/addslide', 'addslide');
@@ -92,8 +96,33 @@ $app->run();
      Step 3: Now the book is borrowed
 
 */
-
-
+function stripepay()
+{
+    $request = \Slim\Slim::getInstance()->request();
+    $data = json_decode($request->getBody());
+    if ($data->user_id ) {
+        try {
+            $amount=$data->amount;
+            $token=$data->token;
+            $descr=$data->descr;
+            $email=$data->email;
+$stripe = new \Stripe\StripeClient(
+    'sk_test_51JNonFLt0g7AUZkxKvW4QFjyvNhU9V4IDF6LWIKgu52rEdrdl1L4dZ1CrcpSkvrmEjd1awY1uje2YjGN5fxbb3eX001CaFi7OU'
+  );
+  $message =$stripe->charges->create([
+    'amount' => $amount,
+    'currency' => 'eur',
+    'source' => $token,
+    'description' => $descr,
+    
+  ]);
+$payload=[error =>false, message=>$message];
+echo json_encode($payload);}
+catch(\Exception $e) {
+    $payload=[error =>true, message=>$e->getMessage()];
+echo json_encode($payload);}
+}
+}
 function borrowingbooks()
 {
     $request = \Slim\Slim::getInstance()->request();
@@ -694,13 +723,15 @@ function confirmcart()
     $request = \Slim\Slim::getInstance()->request();
     $data = json_decode($request->getBody());
     $user_id = $data->user_id;
+    $note = $data->note;
      
     try {
         $categories = '';
         $db = getDB();
-        $sql = "UPDATE cart SET status=1  where user_id=:user_id and status=0 ";
+        $sql = "UPDATE cart SET status=1, note=:note where user_id=:user_id and status=0 ";
         $stmt = $db->prepare($sql);
         $stmt->bindParam("user_id", $user_id, PDO::PARAM_STR);
+        $stmt->bindParam("note", $note, PDO::PARAM_STR);
         
         $stmt->execute();
         $db = null;

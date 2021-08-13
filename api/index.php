@@ -48,7 +48,7 @@ $app->put('/removeproduct', 'removeproduct'); /* cart  */
 $app->put('/addproduct', 'addproduct');
 
 $app->put('/returnproduct', 'returnproduct');
-
+$app->put('/returndeposit', 'returndeposit');
 $app->put('/removecat', 'removecat');
 $app->put('/addcat', 'addcat');
 $app->put('/confirmcart', 'confirmcart');
@@ -122,6 +122,7 @@ function borrowingbooks()
                         ( 
                         `borrowing_date`,
                         `borrowing_expected_return_date`, 
+                        borrowing_deposit_tax,
                         `product_id`, 
                         `user_id`, 
                         `product_qty`,
@@ -129,6 +130,7 @@ function borrowingbooks()
                         VALUES (
                             :borrowing_date,
                             :borrowing_expected_return_date,
+                            :borrowing_deposit_tax,
                             :product_id,
                             :user_id,
                             :product_qty,
@@ -143,11 +145,8 @@ function borrowingbooks()
                // $mod_date = strtotime($current_date . "+ $borrowingdays days");
                 $data->borrowing_date = $current_date;
                 $data->borrowing_expected_return_date = date($data->todate);
-
-
-
-
                 $stmt1->bindParam("borrowing_date", $data->borrowing_date, PDO::PARAM_STR);
+                $stmt1->bindParam("borrowing_deposit_tax", $data->borrowing_deposit_tax, PDO::PARAM_STR);
                 $stmt1->bindParam("borrowing_expected_return_date", $data->borrowing_expected_return_date, PDO::PARAM_STR);
                 $stmt1->bindParam("product_id", $data->product_id, PDO::PARAM_STR);
                 $stmt1->bindParam("user_id", $data->user_id, PDO::PARAM_STR);
@@ -613,7 +612,7 @@ function returnproduct()
     $data = json_decode($request->getBody());
     $book_borrowing_id = $data->book_borrowing_id;
     $product_copies = $data->product_qty;
-    $status='finished';
+    $status='returned';
      $borrowing_return_date=date('Y-m-d');
  
     try {
@@ -640,7 +639,32 @@ function returnproduct()
         echo '{"error":true,"text":' . $e->getMessage() . '}';
     } 
 }
-
+function returndeposit()
+{
+    $request = \Slim\Slim::getInstance()->request();
+    $data = json_decode($request->getBody());
+    $book_borrowing_id = $data->book_borrowing_id;
+    $borrowing_deposit_tax = $data->borrowing_deposit_tax;
+    $status='finished';
+     //$borrowing_return_date=date('Y-m-d');
+ 
+    try {
+        
+        $db = getDB();
+        $sql = "UPDATE book_borrowings SET borrowing_status=:borrowing_status,borrowing_deposit_tax=borrowing_deposit_tax - :borrowing_deposit_tax WHERE book_borrowing_id=:book_borrowing_id";
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("book_borrowing_id", $book_borrowing_id, PDO::PARAM_STR);
+        $stmt->bindParam("borrowing_deposit_tax",   $borrowing_deposit_tax, PDO::PARAM_STR);
+        $stmt->bindParam("borrowing_status", $status, PDO::PARAM_STR);
+      
+        $stmt->execute();
+         
+        $db=null;
+        echo '{"error":false}';
+    } catch (Exception $e) {
+        echo '{"error":true,"text":' . $e->getMessage() . '}';
+    } 
+}
 function updatecat()
 {
     $request = \Slim\Slim::getInstance()->request();

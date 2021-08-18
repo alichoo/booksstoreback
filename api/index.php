@@ -1230,7 +1230,7 @@ function addtocart()
         // $userData=internalUserDetails($product_id);
        
         echo '{"error":false}';}
-        $sql2 = "UPDATE product set product_copies=product_copies - :product_qty where product_id=:product_id";
+        $sql2 = "UPDATE product set product_copies=product_copies - :product_qty where product_id=:product_id and product_copies > :product_qty";
         $stmt2 = $db->prepare($sql2);
         // $stmt2->bindParam("user_id", $user_id, PDO::PARAM_STR);
         $stmt2->bindParam("product_id", $product_id, PDO::PARAM_STR);
@@ -1255,7 +1255,7 @@ function addqtytocart()
         $stmt = $db->prepare($sql);
         $stmt->bindParam("cart_id", $cart_id, PDO::PARAM_STR);
         $stmt->execute();
-        $sql2 = "UPDATE product set product_copies=product_copies - 1 where product_id=:product_id";
+        $sql2 = "UPDATE product set product_copies=product_copies - 1 where product_id=:product_id and product_copies>0";
         $stmt2 = $db->prepare($sql2);
         // $stmt2->bindParam("user_id", $user_id, PDO::PARAM_STR);
         $stmt2->bindParam("product_id", $product_id, PDO::PARAM_STR);

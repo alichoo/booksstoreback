@@ -155,6 +155,8 @@ function borrowingbooks()
                         `product_id`, 
                         `user_id`, 
                         `product_qty`,
+                        pmethod,
+                        pay_status,
                         `borrowing_status`) 
                         VALUES (
                             :borrowing_date,
@@ -163,6 +165,8 @@ function borrowingbooks()
                             :product_id,
                             :user_id,
                             :product_qty,
+                            :pmethod,
+                            :payed,
                             'pending'
                         )";
                 $stmt1 = $db->prepare($insert_in_book_borrowings_query);
@@ -180,6 +184,10 @@ function borrowingbooks()
                 $stmt1->bindParam("product_id", $data->product_id, PDO::PARAM_STR);
                 $stmt1->bindParam("user_id", $data->user_id, PDO::PARAM_STR);
                 $stmt1->bindParam("product_qty", $data->product_qty, PDO::PARAM_STR);
+                $stmt1->bindParam("pmethod", $data->pmethod, PDO::PARAM_STR);
+                $stmt1->bindParam("payed", $data->payed, PDO::PARAM_STR);
+
+
 
 
 

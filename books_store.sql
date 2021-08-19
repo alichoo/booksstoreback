@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : ven. 13 août 2021 à 07:40
+-- Généré le : jeu. 19 août 2021 à 14:05
 -- Version du serveur :  10.4.19-MariaDB
 -- Version de PHP : 7.3.28
 
@@ -83,6 +83,8 @@ CREATE TABLE `book_borrowings` (
   `product_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `borrowing_status` varchar(10) NOT NULL,
+  `pmethod` varchar(20) NOT NULL DEFAULT 'CoD',
+  `pay_status` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -91,8 +93,8 @@ CREATE TABLE `book_borrowings` (
 -- Déchargement des données de la table `book_borrowings`
 --
 
-INSERT INTO `book_borrowings` (`book_borrowing_id`, `borrowing_date`, `borrowing_expected_return_date`, `borrowing_return_date`, `borrowing_deposit_tax`, `product_qty`, `product_id`, `user_id`, `borrowing_status`, `created_at`, `updated_at`) VALUES
-(13, '2021-08-13', '2021-08-15', NULL, '100', 2, 72, 22, 'returned', '2021-08-13 00:17:04', NULL);
+INSERT INTO `book_borrowings` (`book_borrowing_id`, `borrowing_date`, `borrowing_expected_return_date`, `borrowing_return_date`, `borrowing_deposit_tax`, `product_qty`, `product_id`, `user_id`, `borrowing_status`, `pmethod`, `pay_status`, `created_at`, `updated_at`) VALUES
+(15, '2021-08-19', '2021-08-21', NULL, '50', 1, 72, 29, 'pending', 'stripe', 1, '2021-08-19 11:51:45', NULL);
 
 -- --------------------------------------------------------
 
@@ -118,7 +120,10 @@ INSERT INTO `cart` (`cart_id`, `user_id`, `product_id`, `product_qty`, `date`, `
 (283, 22, 69, 1, '2021-08-10 23:20:35', 1, ''),
 (284, 22, 69, 2, '2021-08-11 00:52:20', 1, ''),
 (285, 29, 69, 1, '2021-08-13 01:52:21', 1, 'Payment ID: ch_3JNsy9Lt0g7AUZkx06vftn2Y'),
-(286, 29, 70, 1, '2021-08-13 02:47:33', 1, 'Payment ID: ch_3JNt6ELt0g7AUZkx1NnkLzah');
+(286, 29, 70, 1, '2021-08-13 02:47:33', 1, ''),
+(287, 29, 72, 1, '2021-08-18 00:53:03', 1, ''),
+(288, 29, 65, 1, '2021-08-18 00:54:50', 1, ''),
+(289, 29, 74, 1, '2021-08-18 00:56:24', 1, 'Payment ID: ch_3JPd5ULt0g7AUZkx0HsErhkJ');
 
 -- --------------------------------------------------------
 
@@ -164,7 +169,8 @@ CREATE TABLE `member` (
 --
 
 INSERT INTO `member` (`id`, `user_id`, `member_type`, `status`, `discount`, `added_date`) VALUES
-(1, 22, 0, 0, 2, '2021-08-08 04:11:30');
+(1, 22, 0, 0, 2, '2021-08-08 04:11:30'),
+(2, 29, 0, 0, 2, '2021-08-18 02:03:42');
 
 -- --------------------------------------------------------
 
@@ -233,10 +239,10 @@ CREATE TABLE `product` (
 --
 
 INSERT INTO `product` (`product_id`, `cat_id`, `product_name`, `product_price`, `borrowing_price`, `product_image`, `product_description`, `product_copies`) VALUES
-(65, 14, 'Frames set F1 ', 1550, '1550', 'https://images.unsplash.com/photo-1619631428089-813ef0fca73b?ixid=MnwxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHw4fHx8ZW58MHx8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'Wooden shelf and wooden frames with glass and print pictures ', 3),
-(69, 1, 'C++', 335, '335', 'https://imgv2-1-f.scribdassets.com/img/word_document/382269418/original/216x287/7723ccfab5/1579150149?v=1', 'MDF 18 m and glass 3 m', -5),
+(65, 14, 'Frames set F1 ', 1550, '1550', 'https://images.unsplash.com/photo-1619631428089-813ef0fca73b?ixid=MnwxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHw4fHx8ZW58MHx8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60', 'Wooden shelf and wooden frames with glass and print pictures ', 2),
+(69, 1, 'C++', 335, '335', 'https://imgv2-1-f.scribdassets.com/img/word_document/382269418/original/216x287/7723ccfab5/1579150149?v=1', 'MDF 18 m and glass 3 m', 0),
 (70, 1, 'JAVA', 150, '150', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_WsrU23B6S5Xsm5ZK0KGDTvuTX-Ofu1yXb-uNQMuUdqRA8oSDbIrs2r4BpVxnxOUSC7q9FSuU&usqp=CAc', 'Java is a set of computer software and specifications developed by James Gosling at Sun Microsystems, which was later acquired by the Oracle Corporation, that provides a system for developing application software and deploying it in a cross-platform computing environment', 0),
-(72, 1, 'JAVASCRIPT', 475, '475', 'https://imgv2-1-f.scribdassets.com/img/word_document/376443107/original/216x287/6d3d3ec402/1617227515?v=1', 'MDF 30 m and glass 4m', 1),
+(72, 1, 'JAVASCRIPT', 475, '475', 'https://imgv2-1-f.scribdassets.com/img/word_document/376443107/original/216x287/6d3d3ec402/1617227515?v=1', 'MDF 30 m and glass 4m', 0),
 (73, 1, 'HTML5', 675, '675', 'https://www.templatemonster.com/blog/wp-content/uploads/2011/01/Sams-Teach-Yourself-HTML5-in-10-Minutes.jpg', 'MDF 30 m and glass 4 m', 0),
 (74, 1, 'PYTHON', 775, '775', 'https://images-na.ssl-images-amazon.com/images/I/61gBVmFtNpL.jpg', 'MDF 18 m and glass 4 m', 0),
 (75, 1, 'FULTTER', 1850, '1850', 'https://images-na.ssl-images-amazon.com/images/I/51AiHWxOzcL._SX396_BO1,204,203,200_.jpg', 'MDF 30 m and glass 4 m', 1),
@@ -478,13 +484,13 @@ ALTER TABLE `admin`
 -- AUTO_INCREMENT pour la table `book_borrowings`
 --
 ALTER TABLE `book_borrowings`
-  MODIFY `book_borrowing_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `book_borrowing_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT pour la table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=287;
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=290;
 
 --
 -- AUTO_INCREMENT pour la table `category`
@@ -496,7 +502,7 @@ ALTER TABLE `category`
 -- AUTO_INCREMENT pour la table `member`
 --
 ALTER TABLE `member`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT pour la table `membershipcat`
@@ -543,6 +549,13 @@ ALTER TABLE `wishlist`
 --
 -- Contraintes pour les tables déchargées
 --
+
+--
+-- Contraintes pour la table `book_borrowings`
+--
+ALTER TABLE `book_borrowings`
+  ADD CONSTRAINT `book_borrowings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  ADD CONSTRAINT `book_borrowings_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`);
 
 --
 -- Contraintes pour la table `cart`
